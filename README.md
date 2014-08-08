@@ -99,6 +99,11 @@ define(['handlebars'], function(Handlebars) {
     return this['[template namespace]'];
 });
 ```
+##### namespaceBase
+Type: `String`
+Default: `'that'`
+
+when amd is `not equal` to false, this valie will hold the `template function`s, and be returned as the whole module; the `window` is not polluted by this module;
 
 #### commonjs
 Type: `Boolean`

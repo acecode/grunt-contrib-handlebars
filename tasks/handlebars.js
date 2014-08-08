@@ -35,6 +35,7 @@ module.exports = function(grunt) {
   grunt.registerMultiTask('handlebars', 'Compile handlebars templates and partials.', function() {
     var options = this.options({
       namespace: 'JST',
+      namespaceBase: 'that',
       separator: grunt.util.linefeed + grunt.util.linefeed,
       wrapped: true,
       amd: false,
@@ -89,6 +90,12 @@ module.exports = function(grunt) {
         var src = processContent(grunt.file.read(filepath), filepath);
         nsInfo = namespaceInfo(filepath);
         if (nsInfo) {
+          //console.log("NAMESPACE Base", options.namespaceBase, nsInfo.namespace);
+          if(options.namespaceBase){
+            nsDeclarations[''] = 'var '+ options.namespaceBase + ' = {};';
+            nsInfo.namespace=nsInfo.namespace.replace(/^this/, options.namespaceBase);
+            nsInfo.declaration = nsInfo.namespace + ' = ' + nsInfo.namespace + ' || {};'
+          }
           // save a map of declarations so we can put them at the top of the file later
           nsDeclarations[nsInfo.namespace] = nsInfo.declaration;
         }
@@ -123,6 +130,7 @@ module.exports = function(grunt) {
           }
           filename = processName(filepath);
           if (useNamespace) {
+            //console.log('NAMESPACE: ',nsInfo.namespace);
             templates.push(nsInfo.namespace+'['+JSON.stringify(filename)+'] = '+compiled+';');
           } else if (options.commonjs === true) {
             templates.push('templates['+JSON.stringify(filename)+'] = '+compiled+';');
@@ -153,6 +161,8 @@ module.exports = function(grunt) {
         }
 
         if (options.amd) {
+          // Add Handlebars = Handlebars.default;
+            output.unshift("Handlebars = Handlebars.default;");
           // Wrap the file in an AMD define fn.
           if (typeof options.amd === 'boolean') {
             output.unshift("define(['handlebars'], function(Handlebars) {");
@@ -176,7 +186,11 @@ module.exports = function(grunt) {
           if (useNamespace) {
             // Namespace has not been explicitly set to false; the AMD
             // wrapper will return the object containing the template.
-            output.push("return "+nsInfo.namespace+";");
+            if(options.namespaceBase){
+              output.push("return "+options.namespaceBase + ";");
+            }else{
+              output.push("return "+nsInfo.namespace+";");
+            }
           }
           output.push("});");
         }
