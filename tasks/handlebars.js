@@ -161,8 +161,8 @@ module.exports = function(grunt) {
         }
 
         if (options.amd) {
-          // Add Handlebars = Handlebars.default;
-            output.unshift("var Handlebars = HBS.default;");
+          // Add Handlebars = Handlebars['default'];
+            output.unshift("var Handlebars = HBS['default'];");
           // Wrap the file in an AMD define fn.
           if (typeof options.amd === 'boolean') {
             output.unshift("define(['handlebars'], function(HBS) {");
